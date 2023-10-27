@@ -2,10 +2,18 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.BrokenBarrierException;
 
 class StableMarriageLLP implements LLPInterface 
 {
     int GlobalState[];
+
+    // Macros for the "always" call
+    int currentWomen[];
+
+    CyclicBarrier barrier;
+    boolean forbiddenLeft;
 
     // Input to algo
     Map<Integer, List<Integer>> menPreferences;
@@ -19,48 +27,92 @@ class StableMarriageLLP implements LLPInterface
         this.menPreferences         = menPreferences;
         this.womenPreferences       = womenPreferences;
 
-        // Create a blank global state
-        this.GlobalState = new int[menPreferences.size()];
+        // Create a blank global state and blank macro state
+        this.GlobalState   = new int[menPreferences.size()];
+        this.currentWomen  = new int[menPreferences.size()];
+
+        this.barrier = new CyclicBarrier(menPreferences.size());
+        forbiddenLeft = true;
     }
 
     // ----------------------- LLP functionality -------------------------------------------------------
 
     @Override
-    public void init(int index)
+    public void init(int currentMan)
     {
-        this.GlobalState[index] = 1;
+        this.GlobalState[currentMan] = 0;
     }
 
     @Override
-    public void always(int index)
+    public void always(int currentMan)
     {
-        ;
+        currentWomen[currentMan] = menPreferences.get(currentMan).get(GlobalState[currentMan]);
     }
 
     @Override
-    public boolean forbidden(int index) 
+    public boolean forbidden(int currentMan)  // This function decides whether a index is forbidden
     {
-        // This function decides whether a index is forbidden
-        return true;
+        int currentWoman = currentWomen[currentMan];
+
+        for (int otherMan = 0; otherMan < menPreferences.size(); otherMan++) // Iterate over mens list: 
+        {
+            if (otherMan == currentMan) // No need to check the current man against himself
+            {
+                continue;
+            }
+
+            for (int woman = 0; woman <= GlobalState[otherMan]; woman++) // For each other man, iterate over their preference 
+            {                                                           // list of woman, up to their current preference
+                // For each preference:
+                //System.out.println("Otherman:");
+                if (menPreferences.get(otherMan).get(woman) != currentWoman) // 1) check if that preference is equal to 
+                {                                                            //    the current mans preferred current woman
+                    continue;
+                }
+
+                if (womenPreferences.get(currentWoman).indexOf(otherMan)      // 2)	Check if the current woman prefers 
+                    > womenPreferences.get(currentWoman).indexOf(currentMan)) //    other man over current man
+                {
+                    continue;
+                }
+
+                // If we have made it this far, both conditions are true, and we have a forbidden state.
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
-    public void advance(int index) 
+    public void advance(int currentMan) 
     {
         // Advance the forbidden index
-        GlobalState[index]++;
+        GlobalState[currentMan]++;
     }
 
     @Override
-    public Runnable processorThread(int index)
+    public Runnable processorThread(int man)
     {
         return () -> {
             // This is what each processor should do in parallel
-            this.init(index);
-            this.always(index);
-            if (this.forbidden(index))
+            this.init(man);
+            int tryCount = 3;
+            while (tryCount > 0)    
             {
-                this.advance(index);
+                this.always(man);
+                if (this.forbidden(man))
+                {
+                    this.advance(man);
+                }
+
+                try {
+                    barrier.await(); // Wait for other threads
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+
+                tryCount--;
             }
         };
     }
@@ -72,11 +124,14 @@ public class App {
         Map<Integer, List<Integer>> menPreferences    = new HashMap<>();
         Map<Integer, List<Integer>> womenPreferences  = new HashMap<>();
         
-        menPreferences.put(0, Arrays.asList(1, 2, 3));
-        menPreferences.put(1, Arrays.asList(1, 2, 3));
-        menPreferences.put(2, Arrays.asList(1, 2, 3));
-        menPreferences.put(3, Arrays.asList(1, 2, 3));
-        menPreferences.put(4, Arrays.asList(1, 2, 3));
+        menPreferences.put(0, Arrays.asList(1, 2, 0));
+        menPreferences.put(1, Arrays.asList(1, 0, 2));
+        menPreferences.put(2, Arrays.asList(2, 0, 1));
+        
+        womenPreferences.put(0, Arrays.asList(0, 2, 1));
+        womenPreferences.put(1, Arrays.asList(1, 0, 2));
+        womenPreferences.put(2, Arrays.asList(0, 1, 2));
+    
 
         StableMarriageLLP stableMarriageAlgo = new StableMarriageLLP(menPreferences,
                                                                      womenPreferences);

@@ -22,18 +22,27 @@ public interface LLPInterface
 
         executor.shutdown();
 
-        try {
-            if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+        try 
+        {
+            if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) 
+            {
                 System.out.println("Tasks did not finish in the given time!");
-                // Optional: terminate the tasks forcibly
-                // executor.shutdownNow();
-            } else {
+            } 
+            else 
+            {
                 System.out.println("All tasks completed.");
             }
-        } catch (InterruptedException e) {
+        } 
+        catch (InterruptedException e) 
+        {
             System.err.println("awaitTermination was interrupted: " + e.getMessage());
             Thread.currentThread().interrupt(); // Restore interrupted status
         }
 
+    }
+
+    default void waitTillSync()
+    {
+        ;
     }
 }
