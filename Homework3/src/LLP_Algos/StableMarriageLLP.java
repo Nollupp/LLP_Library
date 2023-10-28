@@ -1,19 +1,14 @@
+package LLP_Algos;
+
 import java.util.Map;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-class StableMarriageLLP implements LLPInterface 
+public class StableMarriageLLP extends LLPInterface 
 {
-    int GlobalState[];
-
     // Macros for the "always" call
     int currentWomen[];
-
-    CyclicBarrier barrier;
-    boolean forbiddenLeft;
 
     // Input to algo
     Map<Integer, List<Integer>> menPreferences;
@@ -30,12 +25,20 @@ class StableMarriageLLP implements LLPInterface
         // Create a blank global state and blank macro state
         this.GlobalState   = new int[menPreferences.size()];
         this.currentWomen  = new int[menPreferences.size()];
-
-        this.barrier = new CyclicBarrier(menPreferences.size());
-        forbiddenLeft = true;
+    }
+    
+    public void runStabelMarriageLLP()
+    {
+        this.runAlgo(this.menPreferences.size());
     }
 
     // ----------------------- LLP functionality -------------------------------------------------------
+
+    @Override
+    public void printGlobalState()
+    {
+        System.out.println(Arrays.toString(this.GlobalState));
+    }
 
     @Override
     public void init(int currentMan)
@@ -64,7 +67,6 @@ class StableMarriageLLP implements LLPInterface
             for (int woman = 0; woman <= GlobalState[otherMan]; woman++) // For each other man, iterate over their preference 
             {                                                           // list of woman, up to their current preference
                 // For each preference:
-                //System.out.println("Otherman:");
                 if (menPreferences.get(otherMan).get(woman) != currentWoman) // 1) check if that preference is equal to 
                 {                                                            //    the current mans preferred current woman
                     continue;
@@ -92,51 +94,30 @@ class StableMarriageLLP implements LLPInterface
     }
 
     @Override
-    public Runnable processorThread(int man)
+    public Runnable processorThread(int man, AtomicBoolean endAlgo)
     {
-        return () -> {
-            // This is what each processor should do in parallel
+        return () -> {  // This is what each processor should do in parallel
+
             this.init(man);
-            int tryCount = 3;
-            while (tryCount > 0)    
-            {
-                this.always(man);
-                if (this.forbidden(man))
+
+            while (endAlgo.get() == false)    
+            { 
+                this.waitForThreadSync(); // Wait for every processor 
+
+                endAlgo.set(true); // Set algorithm to end after this superstep
+
+                this.waitForThreadSync(); // Wait for every processor
+
+                this.always(man);         // Reevaluate any macros
+
+                if (this.forbidden(man))  // Check if the thread has a forbidden index
                 {
-                    this.advance(man);
+                    endAlgo.set(false);  // If there is a forbidden index, algo must not end yet
+                    this.advance(man);            // Advance the forbidden index
                 }
 
-                try {
-                    barrier.await(); // Wait for other threads
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    e.printStackTrace();
-                }
-
-                tryCount--;
+                this.waitForThreadSync();  // Wait for every processor
             }
         };
-    }
-}
-
-public class App {
-    public static void main(String[] args) throws Exception 
-    {
-        Map<Integer, List<Integer>> menPreferences    = new HashMap<>();
-        Map<Integer, List<Integer>> womenPreferences  = new HashMap<>();
-        
-        menPreferences.put(0, Arrays.asList(1, 2, 0));
-        menPreferences.put(1, Arrays.asList(1, 0, 2));
-        menPreferences.put(2, Arrays.asList(2, 0, 1));
-        
-        womenPreferences.put(0, Arrays.asList(0, 2, 1));
-        womenPreferences.put(1, Arrays.asList(1, 0, 2));
-        womenPreferences.put(2, Arrays.asList(0, 1, 2));
-    
-
-        StableMarriageLLP stableMarriageAlgo = new StableMarriageLLP(menPreferences,
-                                                                     womenPreferences);
-        stableMarriageAlgo.runAlgo(10);
-
-        System.out.println(Arrays.toString(stableMarriageAlgo.GlobalState));
     }
 }
