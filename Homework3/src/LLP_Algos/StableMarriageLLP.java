@@ -2,7 +2,6 @@ package LLP_Algos;
 
 import java.util.Map;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StableMarriageLLP extends LLPInterface 
 {
@@ -21,14 +20,13 @@ public class StableMarriageLLP extends LLPInterface
         this.menPreferences         = menPreferences;
         this.womenPreferences       = womenPreferences;
 
-        // Create a blank global state and blank macro state
-        this.GlobalState   = new int[menPreferences.size()];
+        // Create blank macro
         this.currentWomen  = new int[menPreferences.size()];
     }
     
     public void runStableMarriageLLP()
     {
-        // Run algo with one processor per man
+        // Run algo, give global state size
         this.runAlgo(this.menPreferences.size());
     }
 
@@ -94,31 +92,4 @@ public class StableMarriageLLP extends LLPInterface
         ;
     }
 
-    @Override
-    public Runnable processorThread(int man, AtomicBoolean forbiddenIndexExists)
-    {
-        return () -> {  // This is what each processor should do in parallel
-
-            this.init(man);
-
-            while (forbiddenIndexExists.get())    
-            { 
-                this.waitForThreadSync(); // Wait for every processor 
-
-                forbiddenIndexExists.set(false); // Set algorithm to end after this superstep
-
-                this.waitForThreadSync(); // Wait for every processor
-
-                this.always(man);         // Reevaluate any macros
-
-                if (this.forbidden(man))  // Check if the thread has a forbidden index
-                {
-                    forbiddenIndexExists.set(true);  // If there is a forbidden index, algo must not end yet
-                    this.advance(man);            // Advance the forbidden index
-                }
-
-                this.waitForThreadSync();  // Wait for every processor
-            }
-        };
-    }
 }

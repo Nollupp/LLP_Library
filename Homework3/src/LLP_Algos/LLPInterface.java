@@ -21,11 +21,40 @@ public abstract class LLPInterface
     public abstract void always(int index);         // Defines variables derived from G. These variables can be viewed as macros
     public abstract void ensure(int index);         // Ensure a certain condition
     public abstract void advance(int index);        // Advance the forbidden index
-    public abstract boolean forbidden(int index);   // Decides whether a index is forbidden
-    public abstract Runnable processorThread(int index, AtomicBoolean forbiddenIndexExists);  // What each processor should do in parallel
-    
+    public abstract boolean forbidden(int index);   /* Decides whether a index is forbidden. If not used in LLP algo,
+                                                       the return value MUST be false. */
+
     // LLP parallel runtime functions
 
+    public Runnable processorThread(int index, AtomicBoolean forbiddenIndexExists)
+    {
+        return () -> {  // This is what each processor should do in parallel
+
+            this.init(index);
+            
+            this.ensure(index);
+
+            while (forbiddenIndexExists.get())    
+            { 
+                this.waitForThreadSync(); // Wait for every processor 
+
+                forbiddenIndexExists.set(false); // Set algorithm to end after this superstep
+
+                this.waitForThreadSync(); // Wait for every processor
+
+                this.always(index);         // Reevaluate any macros
+
+                if (this.forbidden(index))  // Check if the thread has a forbidden index
+                {
+                    forbiddenIndexExists.set(true);  // If there is a forbidden index, algo must not end yet
+                    this.advance(index);            // Advance the forbidden index
+                }
+
+                this.waitForThreadSync();  // Wait for every processor
+            }
+        };
+    }
+    
     public void printGlobalState()  // Print the global state out to the console
     { 
         System.out.println(Arrays.toString(this.GlobalState)); 
@@ -43,14 +72,17 @@ public abstract class LLPInterface
         }
     }
 
-    void runAlgo(int numProcessors)
+    void runAlgo(int globalStateSize)
     {
+        // Allocate memory for the global state:
+        this.GlobalState   = new int[globalStateSize];
+
         // Java uses multiple cores of CPU for actual parallelism:
-        barrier = new CyclicBarrier(numProcessors);
+        barrier = new CyclicBarrier(globalStateSize);
         AtomicBoolean forbiddenIndexExists = new AtomicBoolean(true);
 
-        ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
-        for (int i = 0; i < numProcessors; i++) 
+        ExecutorService executor = Executors.newFixedThreadPool(globalStateSize);
+        for (int i = 0; i < globalStateSize; i++) 
         {
             executor.submit(processorThread(i, forbiddenIndexExists));
         }

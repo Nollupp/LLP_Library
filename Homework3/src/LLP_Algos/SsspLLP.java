@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.PriorityQueue;
 
 public class SsspLLP extends LLPInterface 
@@ -67,14 +66,5 @@ public class SsspLLP extends LLPInterface
     public void ensure(int index) {
         // Not used in this LLP implemenation/algo
         ;
-    }
-
-
-    @Override
-    public Runnable processorThread(int man, AtomicBoolean forbiddenIndexExists)
-    {
-        return () -> {  // This is what each processor should do in parallel
-            ;
-        };
     }
 }
