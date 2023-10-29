@@ -6,6 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+class Edge {
+    public int start, end, weight;
+
+    public Edge(int start, int end, int weight) {
+        this.start = start;
+        this.end = end;
+        this.weight = weight;
+    }
+}
+
 public class SsspLLP extends LLPInterface 
 {   
     // Inputs:
@@ -18,7 +28,7 @@ public class SsspLLP extends LLPInterface
     PriorityQueue<Integer> minHeap; // TODO:Nolan, figure out what this holds
 
     // Create the stable marriage LLP algo 
-    public SsspLLP()
+    public SsspLLP(int vertices, int edges, int startVertex, List<Edge> edgeList)
     {
         minHeap = new PriorityQueue<Integer>();
         ;

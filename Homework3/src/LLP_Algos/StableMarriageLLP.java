@@ -1,7 +1,12 @@
 package LLP_Algos;
 
 import java.util.Map;
+import InputOutputClasses.StableMarriageInput;
+import InputOutputClasses.StableMarriageOutput;
+
+import java.util.HashMap;
 import java.util.List;
+
 
 public class StableMarriageLLP extends LLPInterface 
 {
@@ -13,21 +18,33 @@ public class StableMarriageLLP extends LLPInterface
     Map<Integer, List<Integer>> womenPreferences;
 
     // Create the stable marriage LLP algo 
-    public StableMarriageLLP(Map<Integer, List<Integer>> menPreferences,
-                             Map<Integer, List<Integer>> womenPreferences)
+    public StableMarriageLLP(StableMarriageInput input)
     {
         // Copy Stable marriage parameters into LLP object
-        this.menPreferences         = menPreferences;
-        this.womenPreferences       = womenPreferences;
+        this.menPreferences         = input.menPreferences;
+        this.womenPreferences       = input.womenPreferences;
 
         // Create blank macro
         this.currentWomen  = new int[menPreferences.size()];
     }
     
-    public void runStableMarriageLLP()
+    public StableMarriageOutput runStableMarriageLLP()
     {
         // Run algo, give global state size
         this.runAlgo(this.menPreferences.size());
+
+        // Once algo is done, return the output
+        Map<Integer, Integer> pairings = new HashMap<Integer, Integer>();
+
+        for (int i = 0; i < this.menPreferences.size(); i++) // Iterate over pairings and store them
+        {
+            int man   = i;
+            int woman = this.GlobalState[i];
+
+            pairings.put(man, woman);
+        }
+
+        return new StableMarriageOutput(pairings);
     }
 
     // ----------------------- LLP functionality -------------------------------------------------------
