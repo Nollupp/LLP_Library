@@ -31,7 +31,11 @@ public class StableMarriageLLP extends LLPInterface
     public StableMarriageOutput runStableMarriageLLP()
     {
         // Run algo, give global state size
-        this.runAlgo(this.menPreferences.size());
+        if (this.runAlgo(this.menPreferences.size()) == false)
+        {
+            // There is no solution vector in this lattice, so return null;
+            return null;
+        }
 
         // Once algo is done, return the output
         Map<Integer, Integer> pairings = new HashMap<Integer, Integer>();

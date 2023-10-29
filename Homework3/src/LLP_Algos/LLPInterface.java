@@ -26,7 +26,7 @@ public abstract class LLPInterface
 
     // LLP parallel runtime functions
 
-    public Runnable processorThread(int index, AtomicBoolean forbiddenIndexExists)
+    private Runnable processorThread(int index, AtomicBoolean forbiddenIndexExists)
     {
         return () -> {  // This is what each processor should do in parallel
 
@@ -54,13 +54,8 @@ public abstract class LLPInterface
             }
         };
     }
-    
-    public void printGlobalState()  // Print the global state out to the console
-    { 
-        System.out.println(Arrays.toString(this.GlobalState)); 
-    }; 
 
-    void waitForThreadSync()
+    private void waitForThreadSync()
     {
         try 
         {
@@ -72,7 +67,7 @@ public abstract class LLPInterface
         }
     }
 
-    void runAlgo(int globalStateSize)
+    public boolean runAlgo(int globalStateSize)
     {
         // Allocate memory for the global state:
         this.GlobalState   = new int[globalStateSize];
@@ -91,9 +86,10 @@ public abstract class LLPInterface
 
         try 
         {
-            if (!executor.awaitTermination(2500, TimeUnit.MILLISECONDS)) 
+            if (!executor.awaitTermination(1000, TimeUnit.MILLISECONDS)) 
             {
                 System.out.println("Tasks did not finish in the given time!");
+                return false;
             } 
             else 
             {
@@ -106,5 +102,12 @@ public abstract class LLPInterface
             Thread.currentThread().interrupt(); // Restore interrupted status
         }
 
+        return true;
     }
+
+    public void printGlobalState()  // Print the global state out to the console
+    { 
+        System.out.println(Arrays.toString(this.GlobalState)); 
+    }; 
+
 }
