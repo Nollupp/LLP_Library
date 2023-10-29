@@ -47,7 +47,7 @@ public abstract class LLPInterface
     {
         // Java uses multiple cores of CPU for actual parallelism:
         barrier = new CyclicBarrier(numProcessors);
-        AtomicBoolean forbiddenIndexExists = new AtomicBoolean(false);
+        AtomicBoolean forbiddenIndexExists = new AtomicBoolean(true);
 
         ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
         for (int i = 0; i < numProcessors; i++) 

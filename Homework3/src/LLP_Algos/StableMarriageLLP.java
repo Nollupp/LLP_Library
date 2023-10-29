@@ -101,11 +101,11 @@ public class StableMarriageLLP extends LLPInterface
 
             this.init(man);
 
-            while (forbiddenIndexExists.get() == false)    
+            while (forbiddenIndexExists.get())    
             { 
                 this.waitForThreadSync(); // Wait for every processor 
 
-                forbiddenIndexExists.set(true); // Set algorithm to end after this superstep
+                forbiddenIndexExists.set(false); // Set algorithm to end after this superstep
 
                 this.waitForThreadSync(); // Wait for every processor
 
@@ -113,7 +113,7 @@ public class StableMarriageLLP extends LLPInterface
 
                 if (this.forbidden(man))  // Check if the thread has a forbidden index
                 {
-                    forbiddenIndexExists.set(false);  // If there is a forbidden index, algo must not end yet
+                    forbiddenIndexExists.set(true);  // If there is a forbidden index, algo must not end yet
                     this.advance(man);            // Advance the forbidden index
                 }
 
