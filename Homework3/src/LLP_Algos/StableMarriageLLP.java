@@ -1,7 +1,6 @@
 package LLP_Algos;
 
 import java.util.Map;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,18 +26,13 @@ public class StableMarriageLLP extends LLPInterface
         this.currentWomen  = new int[menPreferences.size()];
     }
     
-    public void runStabelMarriageLLP()
+    public void runStableMarriageLLP()
     {
+        // Run algo with one processor per man
         this.runAlgo(this.menPreferences.size());
     }
 
     // ----------------------- LLP functionality -------------------------------------------------------
-
-    @Override
-    public void printGlobalState()
-    {
-        System.out.println(Arrays.toString(this.GlobalState));
-    }
 
     @Override
     public void init(int currentMan)
@@ -93,18 +87,25 @@ public class StableMarriageLLP extends LLPInterface
         GlobalState[currentMan]++;
     }
 
+
     @Override
-    public Runnable processorThread(int man, AtomicBoolean endAlgo)
+    public void ensure(int index) {
+        // Unused in this implementation/algo
+        ;
+    }
+
+    @Override
+    public Runnable processorThread(int man, AtomicBoolean forbiddenIndexExists)
     {
         return () -> {  // This is what each processor should do in parallel
 
             this.init(man);
 
-            while (endAlgo.get() == false)    
+            while (forbiddenIndexExists.get() == false)    
             { 
                 this.waitForThreadSync(); // Wait for every processor 
 
-                endAlgo.set(true); // Set algorithm to end after this superstep
+                forbiddenIndexExists.set(true); // Set algorithm to end after this superstep
 
                 this.waitForThreadSync(); // Wait for every processor
 
@@ -112,7 +113,7 @@ public class StableMarriageLLP extends LLPInterface
 
                 if (this.forbidden(man))  // Check if the thread has a forbidden index
                 {
-                    endAlgo.set(false);  // If there is a forbidden index, algo must not end yet
+                    forbiddenIndexExists.set(false);  // If there is a forbidden index, algo must not end yet
                     this.advance(man);            // Advance the forbidden index
                 }
 

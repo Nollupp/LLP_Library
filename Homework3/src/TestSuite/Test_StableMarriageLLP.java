@@ -27,7 +27,7 @@ public class Test_StableMarriageLLP
         StableMarriageLLP stableMarriageAlgo = new StableMarriageLLP(menPreferences,
                                                                      womenPreferences);
 
-        stableMarriageAlgo.runStabelMarriageLLP();
+        stableMarriageAlgo.runStableMarriageLLP();
         stableMarriageAlgo.printGlobalState();
     }
 }
