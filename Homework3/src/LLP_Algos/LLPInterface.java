@@ -36,34 +36,44 @@ public abstract class LLPInterface
 
             while (forbiddenIndexExists.get())    
             { 
-                this.waitForThreadSync(); // Wait for every processor 
+                if (Thread.currentThread().isInterrupted()) {
+                    // Clean up if necessary and then:
+                    return;  // or return;
+                }
+    
+                waitForThreadSync(index); // Wait for every processor 
 
                 forbiddenIndexExists.set(false); // Set algorithm to end after this superstep
 
-                this.waitForThreadSync(); // Wait for every processor
+                waitForThreadSync(index); // Wait for every processor
 
                 this.always(index);         // Reevaluate any macros
-
+                    
                 if (this.forbidden(index))  // Check if the thread has a forbidden index
                 {
                     forbiddenIndexExists.set(true);  // If there is a forbidden index, algo must not end yet
                     this.advance(index);            // Advance the forbidden index
                 }
-
-                this.waitForThreadSync();  // Wait for every processor
+                
+                waitForThreadSync(index);  // Wait for every processor
             }
         };
     }
 
-    private void waitForThreadSync()
+    void waitForThreadSync(int index)
     {
         try 
         {
-            barrier.await(); // Wait for other threads
+            barrier.await();
         } 
-        catch (InterruptedException | BrokenBarrierException e) 
+        catch (InterruptedException e) 
         {
-            e.printStackTrace();
+            Thread.currentThread().interrupt(); // Restore the interrupt status
+            return; // Return from the method to let the thread finish
+        }
+        catch (BrokenBarrierException e) 
+        {
+            ;
         }
     }
 
@@ -71,7 +81,7 @@ public abstract class LLPInterface
     {
         // Allocate memory for the global state:
         this.GlobalState   = new int[globalStateSize];
-
+        
         // Java uses multiple cores of CPU for actual parallelism:
         barrier = new CyclicBarrier(globalStateSize);
         AtomicBoolean forbiddenIndexExists = new AtomicBoolean(true);
@@ -89,6 +99,7 @@ public abstract class LLPInterface
             if (!executor.awaitTermination(1000, TimeUnit.MILLISECONDS)) 
             {
                 System.out.println("Tasks did not finish in the given time!");
+                executor.shutdownNow();
                 return false;
             } 
             else 
