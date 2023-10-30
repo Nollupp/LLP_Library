@@ -108,9 +108,9 @@ public class StableMarriageLLP extends LLPInterface
 
 
     @Override
-    public void ensure(int index) {
+    public boolean ensure(int index) {
         // Unused in this implementation/algo
-        ;
+        return false;
     }
 
 }

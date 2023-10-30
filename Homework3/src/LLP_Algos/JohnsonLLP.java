@@ -54,9 +54,10 @@ public class JohnsonLLP extends LLPInterface
     }
 
     @Override
-    public void ensure(int index) {
+    public boolean ensure(int index) {
         // TODO: This needs to be filled out
         ;
+        return true;
     }
 
     @Override

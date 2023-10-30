@@ -13,26 +13,39 @@ public abstract class LLPInterface
     // LLP Parallel variables
     int GlobalState[];
     CyclicBarrier barrier;
-    boolean forbiddenIndexExists;
 
     // LLP abstract functions (To be defined by implementations that use this library)
 
     public abstract void init(int index);           // Initialize index state
     public abstract void always(int index);         // Defines variables derived from G. These variables can be viewed as macros
-    public abstract void ensure(int index);         // Ensure a certain condition
+    public abstract boolean ensure(int index);         // Ensure a certain condition
     public abstract void advance(int index);        // Advance the forbidden index
     public abstract boolean forbidden(int index);   /* Decides whether a index is forbidden. If not used in LLP algo,
                                                        the return value MUST be false. */
 
     // LLP parallel runtime functions
 
-    private Runnable processorThread(int index, AtomicBoolean forbiddenIndexExists)
+    private Runnable processorThread(int index, AtomicBoolean forbiddenIndexExists, AtomicBoolean notEnsured)
     {
         return () -> {  // This is what each processor should do in parallel
 
             this.init(index);
             
-            this.ensure(index);
+            while(notEnsured.get())
+            {
+                waitForThreadSync(index); // Wait for every processor 
+
+                notEnsured.set(false); // Set algorithm to end after this superstep
+
+                waitForThreadSync(index); // Wait for every processor
+
+                if (this.ensure(index))
+                {
+                    notEnsured.set(true);  // If there is a forbidden index, algo must not end yet
+                }
+
+                waitForThreadSync(index); // Wait for every processor 
+            }
 
             while (forbiddenIndexExists.get())    
             { 
@@ -85,11 +98,12 @@ public abstract class LLPInterface
         // Java uses multiple cores of CPU for actual parallelism:
         barrier = new CyclicBarrier(globalStateSize);
         AtomicBoolean forbiddenIndexExists = new AtomicBoolean(true);
+        AtomicBoolean notEnsured = new AtomicBoolean(true);
 
         ExecutorService executor = Executors.newFixedThreadPool(globalStateSize);
         for (int i = 0; i < globalStateSize; i++) 
         {
-            executor.submit(processorThread(i, forbiddenIndexExists));
+            executor.submit(processorThread(i, forbiddenIndexExists, notEnsured));
         }
 
         executor.shutdown();

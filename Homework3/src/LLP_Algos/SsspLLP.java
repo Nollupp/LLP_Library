@@ -153,8 +153,8 @@ public class SsspLLP extends LLPInterface
     } 
 
     @Override
-    public void ensure(int index) {
+    public boolean ensure(int index) {
         // Not used in this LLP implemenation/algo
-        ;
+        return false;
     }
 }
