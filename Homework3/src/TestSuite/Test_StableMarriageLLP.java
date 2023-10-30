@@ -21,7 +21,6 @@ public class Test_StableMarriageLLP
         menPreferences.put(1, Arrays.asList(1, 2, 0, 3));
         menPreferences.put(2, Arrays.asList(1, 2, 0, 3));
         menPreferences.put(3, Arrays.asList(1, 2, 0, 3));
-        menPreferences.put(4, Arrays.asList(1, 2, 0, 3));
 
         womenPreferences.put(0, Arrays.asList(3, 2, 1, 0));
         womenPreferences.put(1, Arrays.asList(1, 0, 2, 3));
