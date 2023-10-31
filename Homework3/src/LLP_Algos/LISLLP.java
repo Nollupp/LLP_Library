@@ -56,17 +56,17 @@ public class LISLLP extends LLPInterface
     @Override
     public boolean forbidden(int currentIndex)  // This function decides whether a index is forbidden
     {
-        boolean everyPredIsFixed = true;
+        boolean notEveryPredIsFixed = true;
         for (Integer i : pre.get(currentIndex))
         {
             if (!fixed[i])
             {
-                everyPredIsFixed = false;
+                notEveryPredIsFixed = false;
                 break;
             }
         }
 
-        if(!fixed[currentIndex] && everyPredIsFixed){
+        if(!fixed[currentIndex] && notEveryPredIsFixed){
             return true;
         }
 
