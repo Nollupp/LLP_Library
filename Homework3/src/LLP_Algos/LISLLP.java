@@ -4,7 +4,7 @@ import java.util.*;
 
 import InputOutputClasses.LISInput;
 import InputOutputClasses.LISOutput;
-import InputOutputClasses.StableMarriageOutput;
+import Utility.LLPInterface;
 
 public class LISLLP extends LLPInterface
 {

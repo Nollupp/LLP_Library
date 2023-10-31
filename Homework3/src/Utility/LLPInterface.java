@@ -1,4 +1,4 @@
-package LLP_Algos;
+package Utility;
 
 import java.util.Arrays;
 import java.util.concurrent.BrokenBarrierException;
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class LLPInterface 
 {
     // LLP Parallel variables
-    int GlobalState[];
+    public int GlobalState[];
     CyclicBarrier barrier;
 
     // LLP abstract functions (To be defined by implementations that use this library)
@@ -31,8 +31,13 @@ public abstract class LLPInterface
 
             this.init(index);
             
-            while(notEnsured.get())
+            while(notEnsured.get())  // Try the ensured predicate
             {
+                if (Thread.currentThread().isInterrupted()) {
+                    // Clean up if necessary and then:
+                    return;  // or return;
+                }
+
                 waitForThreadSync(index); // Wait for every processor 
 
                 notEnsured.set(false); // Set algorithm to end after this superstep
@@ -45,9 +50,10 @@ public abstract class LLPInterface
                 }
 
                 waitForThreadSync(index); // Wait for every processor 
+                
             }
 
-            while (forbiddenIndexExists.get())    
+            while (forbiddenIndexExists.get()) // Try the forbidden predicate
             { 
                 if (Thread.currentThread().isInterrupted()) {
                     // Clean up if necessary and then:
