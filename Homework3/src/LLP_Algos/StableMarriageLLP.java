@@ -44,7 +44,7 @@ public class StableMarriageLLP extends LLPInterface
         for (int i = 0; i < this.menPreferences.size(); i++) // Iterate over pairings and store them
         {
             int man   = i;
-            int woman = this.GlobalState[i];
+            int woman = currentWomen[i];
 
             pairings.put(man, woman);
         }
@@ -79,19 +79,22 @@ public class StableMarriageLLP extends LLPInterface
             }
 
             for (int woman = 0; woman <= GlobalState[otherMan]; woman++) // For each other man, iterate over their preference 
-            {                                                           // list of woman, up to their current preference
+            {       
+                                                                    // list of woman, up to their current preference
                 // For each preference:
                 if (menPreferences.get(otherMan).get(woman) != currentWoman) // 1) check if that preference is equal to 
-                {                                                            //    the current mans preferred current woman
+                {
+                                                                 //    the current mans preferred current woman
                     continue;
                 }
-
+                
                 if (womenPreferences.get(currentWoman).indexOf(otherMan)      // 2)	Check if the current woman prefers 
                     > womenPreferences.get(currentWoman).indexOf(currentMan)) //    other man over current man
                 {
+                    
                     continue;
                 }
-
+  
                 // If we have made it this far, both conditions are true, and we have a forbidden state.
                 return true;
             }

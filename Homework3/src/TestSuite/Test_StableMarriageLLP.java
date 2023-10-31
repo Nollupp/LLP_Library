@@ -29,10 +29,10 @@ public class Test_StableMarriageLLP
         womenPreferences1.put(3, Arrays.asList(0, 1, 3, 2));
         //
         // <-------INPUT PREFERENCE LIST FOR TEST 2 HERE ------->
-        menPreferences2.put(0, Arrays.asList(1, 2));
-        menPreferences2.put(1, Arrays.asList(1, 2));
-        womenPreferences2.put(0, Arrays.asList(2, 1));
-        womenPreferences2.put(1, Arrays.asList(2, 1));
+        menPreferences2.put(0, Arrays.asList(0, 1));
+        menPreferences2.put(1, Arrays.asList(0, 1));
+        womenPreferences2.put(0, Arrays.asList(1, 0));
+        womenPreferences2.put(1, Arrays.asList(1, 0));
         //
         // <-------INPUT PREFERENCE LIST FOR TEST 3 HERE ------->
         menPreferences3.put(0, Arrays.asList(4, 3, 2, 1, 0));
@@ -55,7 +55,8 @@ public class Test_StableMarriageLLP
         tAll.add(menPreferences3);
         tAll.add(womenPreferences3);
 
-        for(int i = 0; i < tAll.size(); i = i + 2){
+        for(int i = 0; i < tAll.size(); i = i + 2)
+        {
             StableMarriageInput input = new StableMarriageInput(tAll.get(i), tAll.get(i + 1));
             StableMarriageOutput output;
 
