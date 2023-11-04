@@ -38,6 +38,7 @@ public class StableMarriageLLP extends LLPInterface
             return null;
         }
 
+        printGlobalState();
         // Once algo is done, return the output
         Map<Integer, Integer> pairings = new HashMap<Integer, Integer>();
 
